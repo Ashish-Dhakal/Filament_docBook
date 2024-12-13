@@ -2,16 +2,21 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms;
+use App\Models\User;
+use Filament\Tables;
+use App\Models\Patient;
+use Filament\Forms\Form;
+use App\Models\Speciality;
+use Filament\Tables\Table;
+use Filament\Infolists\Infolist;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
-use App\Models\User;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
@@ -30,23 +35,55 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('roles')
+                Forms\Components\Select::make('roles')
+                    ->options([
+                        'patient' => 'Patient',
+                        'doctor' => 'Doctor',
+                    ])
+                    ->required()
+                    ->reactive(),
+                Forms\Components\Select::make('gender')
+                    ->options([
+                        'male' => 'Male',
+                        'female' => 'Female',
+                    ])
+                    ->label('Gender')
                     ->required(),
-                Forms\Components\TextInput::make('gender'),
+
+
+                Forms\Components\Select::make('speciality_id')
+                    ->label('Speciality')
+                    ->options(fn() => Speciality::pluck('name', 'id'))
+                    ->searchable()
+                    ->required()
+                    ->visible(fn(callable $get) => $get('roles') === 'doctor'),
+
+
+                Forms\Components\TextInput::make('hourly_rate')
+                    ->numeric()
+                    ->required()
+                    ->visible(fn(callable $get) => $get('roles') === 'doctor'),
+
+
+
                 Forms\Components\TextInput::make('age')
-                    ->maxLength(255),
+                    ->numeric()
+                    ->maxLength(2)
+                    ->required(),
                 Forms\Components\TextInput::make('blood_group')
-                    ->maxLength(255),
+                    ->maxLength(3)
+                    ->required(),
                 Forms\Components\TextInput::make('phone')
                     ->tel()
-                    ->maxLength(255),
+                    ->maxLength(10)
+                    ->required(),
                 Forms\Components\TextInput::make('address')
-                    ->maxLength(255),
+                    ->maxLength(20)
+                    ->required(),
             ]);
     }
 
@@ -60,13 +97,17 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('roles'),
                 Tables\Columns\TextColumn::make('gender'),
+
                 Tables\Columns\TextColumn::make('age')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('blood_group')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('address')
@@ -86,6 +127,7 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -100,6 +142,21 @@ class UserResource extends Resource
             //
         ];
     }
+
+    // public static function infolist(Infolist $infolist): Infolist
+
+    // {
+    //     return $infolist
+    //         ->schema([
+    //             Section::make('User Details')
+    //                 ->schema([
+    //                     TextEntry::make('name')->label('State Name'),
+    //                     TextEntry::make('email')->label('City Name'),
+    //                 ])->columns(2),
+
+
+    //         ]);
+    // }
 
     public static function getPages(): array
     {
