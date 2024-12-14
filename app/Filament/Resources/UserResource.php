@@ -24,6 +24,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static string $relationship = 'users';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -45,7 +47,9 @@ class UserResource extends Resource
                         'doctor' => 'Doctor',
                     ])
                     ->required()
-                    ->reactive(),
+                    ->reactive()
+                    ->disabled(fn (callable $get) => $get('id') !== null)  // Disable if the record is being edited
+                    ,
                 Forms\Components\Select::make('gender')
                     ->options([
                         'male' => 'Male',
@@ -55,18 +59,22 @@ class UserResource extends Resource
                     ->required(),
 
 
-                Forms\Components\Select::make('speciality_id')
-                    ->label('Speciality')
-                    ->options(fn() => Speciality::pluck('name', 'id'))
-                    ->searchable()
-                    ->required()
-                    ->visible(fn(callable $get) => $get('roles') === 'doctor'),
+              // Speciality field for doctors
+              Forms\Components\Select::make('doctor.speciality_id') // Use the doctor relationship
+              ->label('Speciality')
+              ->options(fn () => Speciality::pluck('name', 'id'))
+              ->searchable()
+              ->required()
+              ->visible(fn (callable $get) => $get('roles') === 'doctor')
+              ->default(fn (?Model $record) => $record && $record->roles === 'doctor' ? $record->doctor->speciality_id : null),
 
+          // Hourly rate for doctors
+          Forms\Components\TextInput::make('doctor.hourly_rate') // Use the doctor relationship
+              ->numeric()
+              ->required()
+              ->visible(fn (callable $get) => $get('roles') === 'doctor')
+              ->default(fn (?Model $record) => $record && $record->roles === 'doctor' ? $record->doctor->hourly_rate : null),
 
-                Forms\Components\TextInput::make('hourly_rate')
-                    ->numeric()
-                    ->required()
-                    ->visible(fn(callable $get) => $get('roles') === 'doctor'),
 
 
 

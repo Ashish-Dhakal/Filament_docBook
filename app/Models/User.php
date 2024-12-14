@@ -32,7 +32,7 @@ class User extends Authenticatable
 
     public function doctor()
     {
-        return $this->hasOne(Doctor::class);
+        return $this->hasOne(Doctor::class , 'user_id');
     }
 
     public function appointments()
