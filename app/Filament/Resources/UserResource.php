@@ -11,6 +11,7 @@ use App\Models\Speciality;
 use Filament\Tables\Table;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use Filament\Actions\RestoreAction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Infolists\Components\Section;
@@ -93,6 +94,8 @@ class UserResource extends Resource
                     ->maxLength(20)
                     ->required(),
             ]);
+            RestoreAction::make()
+            ->successRedirectUrl(route('users.list'));
     }
 
     public static function table(Table $table): Table

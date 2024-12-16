@@ -11,7 +11,7 @@ class User extends Authenticatable
 
 {
     use  HasFactory;
-    protected $fillable = ['name' ,'email', 'password' ,'roles' ,'gender' , 'age' , 'blood_group' , 'phone' , 'address' ];
+    protected $fillable = ['name', 'email', 'password', 'roles', 'gender', 'age', 'blood_group', 'phone', 'address'];
 
     protected $hidden = [
         'password',
@@ -24,15 +24,31 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
+
+    // public function hasRole($roles)
+    // {
+    //     if (is_array($roles)) {
+    //         return in_array($this->role, $roles);
+    //     }
+
+    //     return $this->role === $roles;
+    // }
+
+    public function hasRole($roles): bool
+    {
+        return $this->roles === $roles;
+    }
+
+
+
     public function patient()
     {
-        return $this->hasOne(Patient::class);
+        return $this->hasOne(Patient::class,'user_id');
     }
 
     public function doctor()
     {
-        return $this->hasOne(Doctor::class , 'user_id');
+        return $this->hasOne(Doctor::class, 'user_id');
     }
 
     public function appointments()

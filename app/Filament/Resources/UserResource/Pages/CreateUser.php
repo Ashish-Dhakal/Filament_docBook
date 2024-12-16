@@ -34,7 +34,7 @@ class CreateUser extends CreateRecord
          // Now, depending on the role, create a related Patient or Doctor record
          if ($data['roles'] === 'patient') {
              // Create a Patient record and store only the user_id
-             $user->roles->$data['roles'];
+            //  $user->roles->$data['roles'];
              Patient::create([
                  'user_id' => $user->id, // Save user_id in the patient table
              ]);
