@@ -28,23 +28,28 @@ class AppointmentSlotResource extends Resource
                 Forms\Components\Select::make('doctor_id')
                     ->options(Doctor::with('user')->get()->pluck('user.name', 'id'))
                     ->label('Doctor')
+                    // ->exists()
                     ->rules('exists:doctors,id'),
                 Forms\Components\DatePicker::make('date')
                     ->required()
+                    // ->minDate(now())
                     ->rules('date', 'after:today'),
                 Forms\Components\TimePicker::make('start_time')
                     ->required()
-                    ->rules('date_format:H:i'),
+                    ->rules('date_format:H:i:s'),
                 Forms\Components\TimePicker::make('end_time')
                     ->required()
-                    ->rules('date_format:H:i', 'after:start_time'),
+                    ->rules('date_format:H:i:s')
+                    ->after('start_time'),
                 Forms\Components\Select::make('status')
                     ->options([
                         'unavailable' => 'Unavailable',
                     ])
                     ->required()
                     ->rules('in:unavailable'),
-            ]);
+                    ]);
+
+         
     }
 
     public static function table(Table $table): Table
