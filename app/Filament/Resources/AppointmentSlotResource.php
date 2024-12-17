@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\AppointmentSlot;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\AppointmentSlotResource\Pages;
@@ -26,16 +27,18 @@ class AppointmentSlotResource extends Resource
     {
         return $form
             ->schema([
-                // Assuming the relationship is defined as 'doctor' in AppointmentSlot
-                Forms\Components\Select::make('doctor_id')
-                    ->options(Doctor::with('user')->get()->pluck('user.name', 'id'))
-                    ->label('Doctor')
-                    // ->exists()
-                    ->rules('exists:doctors,id'),
+                Forms\Components\Hidden::make('doctor_id')
+                    ->default(function () {
+                        // Check if the authenticated user is a doctor
+                        $user = Auth::user();
+                        if ($user && $user->doctor) {
+                            return $user->doctor->id; // Pre-select the doctor's ID for the authenticated user
+                        }
+                        return null; // Return null if no doctor is found
+                    }),
                 Forms\Components\DatePicker::make('date')
-                    ->required()
-                    // ->minDate(now())
-                    ->rules('date', 'after:today'),
+                    ->required(),
+                    // ->rules('after:today'),
                 Forms\Components\TimePicker::make('start_time')
                     ->required()
                     ->rules('date_format:H:i:s'),
@@ -49,9 +52,7 @@ class AppointmentSlotResource extends Resource
                     ])
                     ->required()
                     ->rules('in:unavailable'),
-                    ]);
-
-         
+            ]);
     }
 
     public static function table(Table $table): Table
