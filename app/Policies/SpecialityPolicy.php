@@ -13,7 +13,7 @@ class SpecialityPolicy
      */
     public function viewAny(User $user): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;
@@ -24,7 +24,7 @@ class SpecialityPolicy
      */
     public function view(User $user, Speciality $speciality): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;
@@ -35,7 +35,7 @@ class SpecialityPolicy
      */
     public function create(User $user): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;
@@ -46,7 +46,7 @@ class SpecialityPolicy
      */
     public function update(User $user, Speciality $speciality): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;
@@ -57,7 +57,7 @@ class SpecialityPolicy
      */
     public function delete(User $user, Speciality $speciality): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;
@@ -68,7 +68,7 @@ class SpecialityPolicy
      */
     public function restore(User $user, Speciality $speciality): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;
@@ -79,7 +79,7 @@ class SpecialityPolicy
      */
     public function forceDelete(User $user, Speciality $speciality): bool
     {
-        if($user->roles=== 'doctor') {
+        if($user->roles=== 'admin') {
             return true;
         }
         return false;

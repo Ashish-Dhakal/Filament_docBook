@@ -47,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Appointments Management')
-                    ->icon('heroicon-o-rectangle-stack')
+                    // ->icon('heroicon-o-rectangle-stack')
                     ->collapsible(), 
                 NavigationGroup::make()
                     ->label('User Management')
