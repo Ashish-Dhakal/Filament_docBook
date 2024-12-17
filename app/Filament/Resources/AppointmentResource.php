@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Filament\Resources\AppointmentResource\RelationManagers;
+use App\Filament\Resources\AppointmentResource\RelationManagers\ReviewsRelationManager;
 
 class AppointmentResource extends Resource
 {
@@ -154,7 +155,7 @@ class AppointmentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Add relations if needed
+            ReviewsRelationManager::class
         ];
     }
 
