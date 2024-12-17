@@ -51,8 +51,8 @@ class UserResource extends Resource
                     ])
                     ->required()
                     ->reactive()
-                    ->disabled(fn (callable $get) => $get('id') !== null)  // Disable if the record is being edited
-                    ,
+                    ->disabled(fn(callable $get) => $get('id') !== null)  // Disable if the record is being edited
+                ,
                 Forms\Components\Select::make('gender')
                     ->options([
                         'male' => 'Male',
@@ -62,21 +62,21 @@ class UserResource extends Resource
                     ->required(),
 
 
-              // Speciality field for doctors
-              Forms\Components\Select::make('doctor.speciality_id') // Use the doctor relationship
-              ->label('Speciality')
-              ->options(fn () => Speciality::pluck('name', 'id'))
-              ->searchable()
-              ->required()
-              ->visible(fn (callable $get) => $get('roles') === 'doctor')
-              ->default(fn (?Model $record) => $record && $record->roles === 'doctor' ? $record->doctor->speciality_id : null),
+                // Speciality field for doctors
+                Forms\Components\Select::make('doctor.speciality_id') // Use the doctor relationship
+                    ->label('Speciality')
+                    ->options(fn() => Speciality::pluck('name', 'id'))
+                    ->searchable()
+                    ->required()
+                    ->visible(fn(callable $get) => $get('roles') === 'doctor')
+                    ->default(fn(?Model $record) => $record && $record->roles === 'doctor' ? $record->doctor->speciality_id : null),
 
-          // Hourly rate for doctors
-          Forms\Components\TextInput::make('doctor.hourly_rate') // Use the doctor relationship
-              ->numeric()
-              ->required()
-              ->visible(fn (callable $get) => $get('roles') === 'doctor')
-              ->default(fn (?Model $record) => $record && $record->roles === 'doctor' ? $record->doctor->hourly_rate : null),
+                // Hourly rate for doctors
+                Forms\Components\TextInput::make('doctor.hourly_rate') // Use the doctor relationship
+                    ->numeric()
+                    ->required()
+                    ->visible(fn(callable $get) => $get('roles') === 'doctor')
+                    ->default(fn(?Model $record) => $record && $record->roles === 'doctor' ? $record->doctor->hourly_rate : null),
 
 
 
@@ -85,8 +85,17 @@ class UserResource extends Resource
                     ->numeric()
                     ->maxLength(2)
                     ->required(),
-                Forms\Components\TextInput::make('blood_group')
-                    ->maxLength(3)
+                Forms\Components\Select::make('blood_group')
+                    ->options([
+                        'A+' => 'A+',
+                        'A-' => 'A-',
+                        'B+' => 'B+',
+                        'B-' => 'B-',
+                        'AB+' => 'AB+',
+                        'AB-' => 'AB-',
+                        'O+' => 'O+',
+                        'O-' => 'O-',
+                    ])
                     ->required(),
                 Forms\Components\TextInput::make('phone')
                     ->tel()
@@ -96,7 +105,7 @@ class UserResource extends Resource
                     ->maxLength(20)
                     ->required(),
             ]);
-            RestoreAction::make()
+        RestoreAction::make()
             ->successRedirectUrl(route('users.list'));
     }
 
