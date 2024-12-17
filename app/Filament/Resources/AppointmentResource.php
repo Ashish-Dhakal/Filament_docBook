@@ -46,13 +46,33 @@ class AppointmentResource extends Resource
                     ->required(),
                 Forms\Components\TimePicker::make('end_time')
                     ->required(),
+                // Forms\Components\Select::make('status')
+                //     ->required()
+                //     ->options([
+                //         'pending' => 'Pending',
+                //     ]),
+
                 Forms\Components\Select::make('status')
                     ->required()
-                    ->options([
-                        'pending' => 'Pending',
-                    ]),
+                    ->options(function () {
+                        // Determine options based on the authenticated user's role
+                        if (Auth::user()->roles === 'admin') {
+                            return [
+                                'booked' => 'Booked',
+                            ];
+                        } elseif (Auth::user()->roles === 'patient') {
+                            return [
+                                'pending' => 'Pending',
+                            ];
+                        }
+                    })
+                    ->default(function () {
+                        // Automatically set default value based on the user's role
+                        return Auth::user()->roles === 'admin' ? 'booked' : 'pending';
+                    })
+                    ->hidden(fn () => Auth::user()->roles === 'patient'),
+
             ]);
-      
     }
 
     public static function table(Table $table): Table
@@ -87,7 +107,7 @@ class AppointmentResource extends Resource
                 // Get the currently authenticated user
                 $user = User::find(Auth::user()->id);
                 // $user = User::find(Filament::auth()->user()->id);
-            // dd(Auth::user()->id);
+                // dd(Auth::user()->id);
                 // If the user is an admin, they can see all appointments
                 if ($user->hasRole('admin')) {
                     return $query;
@@ -120,12 +140,12 @@ class AppointmentResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                
-                        Tables\Actions\DeleteBulkAction::make()
-                        // ->visible(
-                        //     fn () => Auth::user()->roles === 'admin'
-                        // )
-                    
+
+                    Tables\Actions\DeleteBulkAction::make()
+                    // ->visible(
+                    //     fn () => Auth::user()->roles === 'admin'
+                    // )
+
                     // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
