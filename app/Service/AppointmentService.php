@@ -164,8 +164,9 @@ class AppointmentService
     private function validateStatus(string $status, Appointment $appointment)
     {
         if ($appointment->status === 'completed' && $status !== 'completed') {
-            abort(Response::HTTP_FORBIDDEN, );
-            // throw ValidationException::withMessages(['data_exist' => 'This appointment is already completed and cannot be modified.']);
+            // abort(Response::HTTP_FORBIDDEN, );
+            throw ValidationException::withMessages(['data_exist' => 'This appointment is already completed and cannot be modified.']);
+            return redirect()->route('filament.admin.resources.appointments.index');
         }
     }
 

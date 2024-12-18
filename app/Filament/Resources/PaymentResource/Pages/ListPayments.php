@@ -90,7 +90,7 @@ class ListPayments extends ListRecords
                     })
                     ->url(function ($record) {
                         if ($record && $record->payment_status === 'pending') {
-                            return route('welcome');
+                            return route('stripe.index', ['id' => $record->id]);
                         }
                         return null; 
                     })
