@@ -62,14 +62,14 @@ class AppointmentPolicy
     public function edit(User $user, Appointment $appointment)
     {
         // Admins can edit any appointment
-        if ($user->roles === 'admin') {
+        if ((($user->roles === 'admin') || ($user->roles === 'patient' && $appointment->patient_id === $this->userId())) && ($appointment->status == 'pending')) {
             return true;
         }
 
         // Patients can edit only their own appointments
-        if ($user->roles === 'patient' && $appointment->patient_id === $this->userId()) {
-            return true;
-        }
+        // if () {
+        //     return true;
+        // }
 
         // Default: not authorized
 
@@ -83,10 +83,14 @@ class AppointmentPolicy
      */
     public function update(User $user, Appointment $appointment)
     {
-        return $user->roles === 'admin' ||
-            ($user->roles === 'patient' && $appointment->patient_id === $this->userId());
+        if ((($user->roles === 'admin') || ($user->roles === 'patient' && $appointment->patient_id === $this->userId())) && ($appointment->status == 'pending')) {
+            return true;
+        }
+
+        return false;
     }
 
+    
     /**
      * Determine if the user can delete an appointment.
      */

@@ -105,8 +105,7 @@ class UserResource extends Resource
                     ->maxLength(20)
                     ->required(),
             ]);
-        RestoreAction::make()
-            ->successRedirectUrl(route('users.list'));
+       
     }
 
     public static function table(Table $table): Table

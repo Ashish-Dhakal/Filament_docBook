@@ -35,43 +35,21 @@ class AppointmentResource extends Resource
                     ->options(Patient::with('user')->get()->pluck('user.name', 'id'))
                     ->label('Patient Name')
                     ->rules('exists:patients,id')
-                    ->required(),
+                    ->required()
+                    ->visible(Auth::user()->hasRole('admin')),
                 Forms\Components\Select::make('doctor_id')
                     ->options(Doctor::with('user')->get()->pluck('user.name', 'id'))
                     ->label('Doctor')
                     ->rules('exists:doctors,id')
                     ->required(),
                 Forms\Components\DatePicker::make('date')
+                    ->minDate(now()->toDateString())
                     ->required(),
                 Forms\Components\TimePicker::make('start_time')
                     ->required(),
                 Forms\Components\TimePicker::make('end_time')
+                    ->after('start_time')
                     ->required(),
-                // Forms\Components\Select::make('status')
-                //     ->required()
-                //     ->options([
-                //         'pending' => 'Pending',
-                //     ]),
-
-                Forms\Components\Select::make('status')
-                    ->required()
-                    ->options(function () {
-                        // Determine options based on the authenticated user's role
-                        if (Auth::user()->roles === 'admin') {
-                            return [
-                                'booked' => 'Booked',
-                            ];
-                        } elseif (Auth::user()->roles === 'patient') {
-                            return [
-                                'pending' => 'Pending',
-                            ];
-                        }
-                    })
-                    ->default(function () {
-                        // Automatically set default value based on the user's role
-                        return Auth::user()->roles === 'admin' ? 'booked' : 'pending';
-                    })
-                    ->hidden(fn () => Auth::user()->roles === 'patient'),
 
             ]);
     }

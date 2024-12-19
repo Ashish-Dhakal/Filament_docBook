@@ -12,34 +12,44 @@ use App\Models\Payment;
 use Filament\Tables\Table;
 use App\Models\Appointment;
 use App\Models\PatientHistory;
+use App\Service\ReviewService;
 use App\Models\AppointmentSlot;
+use Illuminate\Support\Facades\DB;
 use App\Service\AppointmentService;
-use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Components\Tab;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Notifications\NotificationType;
+use Filament\Tables\Columns\TextInputColumn;
 use Symfony\Component\HttpFoundation\Response;
 use App\Filament\Resources\AppointmentResource;
-
-
-
-
+use Filament\Tables\Actions\Action as TableAction;
 
 class ListAppointments extends ListRecords
 {
     protected static string $resource = AppointmentResource::class;
 
+    /**
+     * Get the header actions. 
+     */
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make(),
         ];
     }
+
+    /**
+     * Get the user ID based on their role 
+     */
 
     public function userId()
     {
@@ -54,6 +64,9 @@ class ListAppointments extends ListRecords
         }
     }
 
+    /**
+     * Define the table columns.
+     */
     public function getTabs(): array
     {
         // Get the currently authenticated user
@@ -127,7 +140,9 @@ class ListAppointments extends ListRecords
         return $tabs;
     }
 
-
+    /**
+     * Configure the table fields and actions.  
+     */
     public function table(Table $table): Table
     {
         return $table
@@ -145,14 +160,24 @@ class ListAppointments extends ListRecords
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_time'),
                 Tables\Columns\TextColumn::make('end_time'),
-                Tables\Columns\SelectColumn::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'completed' => 'Completed',
-                        'booked' => 'Booked',
-                        'cancelled' => 'Cancelled',
-                    ])
-                    ->afterStateUpdated(fn($state, $record) => $this->updateStatus($state, $record)),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Payment Status')
+                    ->formatStateUsing(function ($state) {
+                        // Return the state for display
+                        return ucfirst($state);
+                    })
+                    ->searchable()
+                    ->badge()
+                    ->color(function ($state) {
+               
+                        return match ($state) {
+                            'pending' => 'danger',
+                            'completed' => 'success',
+                            'booked' => 'primary',
+                            default => 'secondary', // Optional default case
+                        };
+                    }),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -179,22 +204,86 @@ class ListAppointments extends ListRecords
                 // Add any filters if needed
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+            
+                    TableAction::make('updateStatus')
+                        ->label('Update Status')
+                        ->form([
+                            Select::make('status')
+                                ->label('Status')
+                                ->options([
+                                    'booked' => 'Booked',
+                                    'completed' => 'Completed',
+                                    'cancelled' => 'Cancelled',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function (Appointment $record, array $data): void {
+                            $status = $data['status'];
+                            $this->updateStatus($status, $record);
+                        })
+                        ->icon('heroicon-o-arrow-path')
+                        ->hidden(fn(Appointment $record) => $record->status === 'completed')
+                        // Visible for admin only
+                        ->visible(fn() => Auth::user()->hasRole('admin')),
+            
+                    TableAction::make('giveReview')
+                        ->label('Give Review')
+                        ->form([
+                            TextInput::make('appointment_id')
+                                ->label('Appointment')
+                                ->required()
+                                ->default(fn (Appointment $record) => $record->id),
+            
+                            TextInput::make('review')
+                                ->label('Review')
+                                ->required(),
+            
+                            FileUpload::make('pdf')
+                                ->label('PDF')
+                                ->required(),
+                        ])
+                        ->action(function (Appointment $record, array $data): void {
+                            $this->addReview($data, $record);
+                        })
+                        ->icon('heroicon-o-arrow-path')
+                        ->visible(fn(Appointment $record) => $record->status === 'booked')
+                        // Visible for doctor only
+                        ->visible(fn() => Auth::user()->hasRole('doctor')),
+            
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                    ->hidden(fn(Appointment $record) => $record->status === 'completed'),
+            
+                ])
             ])
+                    
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    // Optional: Set a color for the action
                 ]),
+                BulkAction::make('booked_all')
+                    ->label('Booked All')
+                    ->action(function ($records) {
+                        foreach ($records as $record) {
+                            $status = 'booked';
+                            $this->updateStatus($status, $record);
+                        }
+                    })
+                    ->icon('heroicon-o-check-circle') // Optional: Set an icon for the action
+                    ->color('info')
+                    ->visible(fn() => Auth::user()->roles === 'admin'),
+
             ]);
     }
 
-
+    /**
+     * Update the status of an appointment. 
+     */
     public function updateStatus(string $status, Appointment $appointment)
     {
         $service = new AppointmentService();
-
-
         $response = $service->updateStatus($status, $appointment);
 
         if ($response) {
@@ -207,6 +296,26 @@ class ListAppointments extends ListRecords
             Notification::make()
                 ->title('Success')
                 ->body('Appointment status updated successfully')
+                ->success()
+                ->send();
+        }
+    }
+
+    Public function addReview(array $data, Appointment $appointment)
+    {
+        // dd('sdfsdf');
+        $service = new ReviewService();
+        $response = $service->addReview($data, $appointment);
+        if ($response) {
+            Notification::make()
+                ->title('Error')
+                ->body($response)
+                ->danger()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Success')
+                ->body('Review added successfully')
                 ->success()
                 ->send();
         }

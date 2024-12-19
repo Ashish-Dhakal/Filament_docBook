@@ -15,6 +15,9 @@ use Illuminate\Validation\ValidationException;
 
 class AppointmentService
 {
+    /**
+     * Create an appointment
+     */
     public function createAppointment(array $data)
     {
         $data['patient_id'] = $this->getAuthenticatedPatientId($data);
@@ -41,6 +44,9 @@ class AppointmentService
         return $this->storeAppointment($data, $patientId);
     }
 
+    /**
+     * Check if a doctor is available for a specific time slot. 
+     */
     private function checkDoctorSlotStatus($doctorId, $date, $startTime, $endTime)
     {
         $conflict = AppointmentSlot::where('doctor_id', $doctorId)
@@ -50,7 +56,7 @@ class AppointmentService
                     ->orWhereBetween('end_time', [$startTime, $endTime])
                     ->orWhere(function ($query) use ($startTime, $endTime) {
                         $query->where('start_time', '<=', $startTime)
-                              ->where('end_time', '>=', $endTime);
+                            ->where('end_time', '>=', $endTime);
                     });
             })
             ->whereIn('status', ['booked', 'unavailable'])
@@ -63,6 +69,9 @@ class AppointmentService
         return null;
     }
 
+    /**
+     *  Check for conflicting appointments between a doctor and a patient.
+     */
     private function checkAppointmentConflict($doctorId, $patientId, $date, $startTime, $endTime)
     {
         $conflict = Appointment::where('doctor_id', $doctorId)
@@ -73,7 +82,7 @@ class AppointmentService
                     ->orWhereBetween('end_time', [$startTime, $endTime])
                     ->orWhere(function ($query) use ($startTime, $endTime) {
                         $query->where('start_time', '<=', $startTime)
-                              ->where('end_time', '>=', $endTime);
+                            ->where('end_time', '>=', $endTime);
                     });
             })
             ->whereIn('status', ['booked', 'pending'])
@@ -86,15 +95,31 @@ class AppointmentService
         return null;
     }
 
-    private function storeAppointment($data, $patientId)
+    /**
+     * Store a newly created appointment in storage.
+     */
+    private function storeAppointment($data)
     {
+        // dd($patientId);
         // Add the patient ID to data
-        $data['patient_id'] = $patientId;
+        // $data['patient_id'] = $patientId;
+        // if()
 
+        if(Auth::user()->roles == 'patient'){
+            $userId = Auth::id();
+            $patient = Patient::where('user_id', $userId)->first();
+            $patientId = $patient->id;
+            $status = 'pending';
+        }
+        else{
+            $status = 'booked';
+            $patientId = $data['patient_id'];
+        }
         // Save the appointment
         $appointment = new Appointment();
         $appointment->fill($data);
-        $appointment->status = $data['status'] ?? 'booked';
+        $appointment->patient_id = $patientId;
+        $appointment->status = $status;
         $appointment->save();
 
         // Save the corresponding slot as booked
@@ -111,6 +136,9 @@ class AppointmentService
         return $appointment;
     }
 
+    /**
+     * Get the authenticated patient ID.
+     */
     private function getAuthenticatedPatientId($data)
     {
         if (Auth::user()->roles === 'patient') {
@@ -118,7 +146,7 @@ class AppointmentService
             $patient = \App\Models\Patient::where('user_id', Auth::id())->first();
             return $patient?->id;
         }
-    
+
         if (Auth::user()->roles === 'admin') {
             // Admin must provide a patient ID
             if (!isset($data['patient_id']) || empty($data['patient_id'])) {
@@ -126,29 +154,30 @@ class AppointmentService
                     'patient_id' => 'The patient ID is required when creating an appointment as an admin.',
                 ]);
             }
-    
+
             return $data['patient_id'];
         }
-    
+
         // Default behavior for unauthorized roles
         throw ValidationException::withMessages([
             'role' => 'You do not have permission to create an appointment.',
         ]);
     }
 
+    /**
+     * Handles appointments with different statuses.
+     */
+
     public function updateStatus(string $status, Appointment $appointment)
     {
-        $this->validateStatus($status, $appointment);
 
         switch ($status) {
-            case 'pending':
-                return $this->handlePending($appointment);
-                break;
+
             case 'booked':
                 return $this->handleBooked($appointment);
                 break;
             case 'cancelled':
-                return $this->handleCancelled($appointment);
+                return $this->handleCancelled($status, $appointment);
                 break;
             case 'completed':
                 return $this->handleCompleted($appointment);
@@ -156,41 +185,6 @@ class AppointmentService
             default:
                 return 'Invalid status';
         }
-    }
-
-    /**
-     * Validates whether a status update is allowed.
-     */
-    private function validateStatus(string $status, Appointment $appointment)
-    {
-        if ($appointment->status === 'completed' && $status !== 'completed') {
-            // abort(Response::HTTP_FORBIDDEN, );
-            throw ValidationException::withMessages(['data_exist' => 'This appointment is already completed and cannot be modified.']);
-            return redirect()->route('filament.admin.resources.appointments.index');
-        }
-    }
-
-    /**
-     * Handles pending appointments.
-     */
-    private function handlePending(Appointment $appointment)
-    {
-        $appointmentSlot = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
-            ->where('date', $appointment->date)
-            ->where('start_time', $appointment->start_time)
-            ->where('end_time', $appointment->end_time)
-            ->where('status', 'booked')
-            ->first();
-
-        if ($appointmentSlot) {
-            // return 'This time slot is already booked.';
-            return redirect()->back()->with('error', 'This time slot is already booked.');
-        }
-
-        $appointment->status = 'pending';
-        $appointment->save();
-
-        return null;
     }
 
     /**
@@ -206,8 +200,11 @@ class AppointmentService
     /**
      * Handles cancelled appointments.
      */
-    private function handleCancelled(Appointment $appointment)
+    private function handleCancelled(string $status, Appointment $appointment)
     {
+        if ($appointment->status === 'booked' && $status === 'cancelled') {
+            return 'Cannot update status to "canclled" as the appointment is already booked';
+        }
         $appointmentSlot = AppointmentSlot::where('doctor_id', $appointment->doctor_id)
             ->where('date', $appointment->date)
             ->where('start_time', $appointment->start_time)
@@ -228,6 +225,7 @@ class AppointmentService
      */
     private function handleCompleted(Appointment $appointment)
     {
+
         if ($appointment->status !== 'completed') {
             AppointmentSlot::where('doctor_id', $appointment->doctor_id)
                 ->where('date', $appointment->date)
@@ -235,26 +233,20 @@ class AppointmentService
                 ->where('end_time', $appointment->end_time)
                 ->delete();
         }
-
-        if (!$appointment->reviews) {
-            return 'Please add a review first';
-        }
-
         $startTime = Carbon::parse($appointment->start_time);
         $endTime = Carbon::parse($appointment->end_time);
         $durationInHours = $startTime->diffInHours($endTime);
         $totalFee = $durationInHours * $appointment->doctor->hourly_rate;
 
+        $firstReview = $appointment->reviews->first();
+        if (!$firstReview) {
+            return 'Doctor is yet to add a review.';
+        }
         $payment = Payment::create([
             'appointment_id' => $appointment->id,
             'amount' => $totalFee,
             'patient_id' => $appointment->patient_id,
         ]);
-
-        $firstReview = $appointment->reviews->first();
-        if (!$firstReview) {
-            return 'Doctor is yet to add a review.';
-        }
 
         PatientHistory::create([
             'appointment_id' => $appointment->id,
@@ -269,5 +261,4 @@ class AppointmentService
 
         return null;
     }
-    
 }
