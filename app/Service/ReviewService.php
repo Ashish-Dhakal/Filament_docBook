@@ -24,6 +24,14 @@ class ReviewService
         $review->comment = $data['review'];
         $review->pdf = $data['pdf'];
         $review->save();
-        return $review;
+
+      // update the status of the appointment after review added
+        $appointment->status = 'reviewed';
+        $appointment->save();
+        // if($review){
+        //     return ;
+        // }
+
+        // return "Review ";
     }
 }

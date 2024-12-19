@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Storage;
 
 class ReviewResource extends Resource
 {
@@ -41,7 +42,9 @@ class ReviewResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('pdf')
-                    ->searchable(),
+                    ->searchable()
+                    ->url(fn(Review $record) => Storage::url($record->pdf))
+                    ->html(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

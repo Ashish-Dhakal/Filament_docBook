@@ -161,7 +161,7 @@ class ListAppointments extends ListRecords
                 Tables\Columns\TextColumn::make('start_time'),
                 Tables\Columns\TextColumn::make('end_time'),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Payment Status')
+                    ->label('Appointmetn Status')
                     ->formatStateUsing(function ($state) {
                         // Return the state for display
                         return ucfirst($state);
@@ -226,22 +226,23 @@ class ListAppointments extends ListRecords
                         ->hidden(fn(Appointment $record) => $record->status === 'completed')
                         // Visible for admin only
                         ->visible(fn() => Auth::user()->hasRole('admin')),
-            
+
                     TableAction::make('giveReview')
                         ->label('Give Review')
                         ->form([
                             TextInput::make('appointment_id')
                                 ->label('Appointment')
                                 ->required()
-                                ->default(fn (Appointment $record) => $record->id),
-            
+                                ->default(fn(Appointment $record) => $record->id),
+
                             TextInput::make('review')
                                 ->label('Review')
                                 ->required(),
-            
+
                             FileUpload::make('pdf')
                                 ->label('PDF')
-                                ->required(),
+                                ->required()
+                                ->acceptedFileTypes(['application/pdf']),
                         ])
                         ->action(function (Appointment $record, array $data): void {
                             $this->addReview($data, $record);
@@ -250,14 +251,14 @@ class ListAppointments extends ListRecords
                         ->visible(fn(Appointment $record) => $record->status === 'booked')
                         // Visible for doctor only
                         ->visible(fn() => Auth::user()->hasRole('doctor')),
-            
+
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
-                    ->hidden(fn(Appointment $record) => $record->status === 'completed'),
-            
+                        ->hidden(fn(Appointment $record) => $record->status === 'completed'),
+
                 ])
             ])
-                    
+
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -301,7 +302,7 @@ class ListAppointments extends ListRecords
         }
     }
 
-    Public function addReview(array $data, Appointment $appointment)
+    public function addReview(array $data, Appointment $appointment)
     {
         // dd('sdfsdf');
         $service = new ReviewService();
