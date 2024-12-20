@@ -18,6 +18,12 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Filament\Resources\AppointmentResource\RelationManagers;
 use App\Filament\Resources\AppointmentResource\RelationManagers\ReviewsRelationManager;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Split;
+
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 
 class AppointmentResource extends Resource
 {
@@ -31,30 +37,83 @@ class AppointmentResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('patient_id')
-                    ->options(Patient::with('user')->get()->pluck('user.name', 'id'))
-                    ->label('Patient Name')
-                    ->rules('exists:patients,id')
-                    ->required()
-                    ->visible(Auth::user()->hasRole('admin')),
-                Forms\Components\Select::make('doctor_id')
-                    ->options(Doctor::with('user')->get()->pluck('user.name', 'id'))
-                    ->label('Doctor')
-                    ->rules('exists:doctors,id')
-                    ->required(),
-                Forms\Components\DatePicker::make('date')
-                    ->minDate(now()->toDateString())
-                    ->required(),
-                Forms\Components\TimePicker::make('start_time')
-                    ->required(),
-                Forms\Components\TimePicker::make('end_time')
-                    ->after('start_time')
-                    ->required(),
 
+                Split::make([
+                    Section::make([
+                        Forms\Components\Select::make('patient_id')
+                            ->options(Patient::with('user')->get()->pluck('user.name', 'id'))
+                            ->label('Patient Name')
+                            ->rules('exists:patients,id')
+                            ->required()
+                            ->visible(Auth::user()->hasRole('admin')),
+
+                        Forms\Components\Select::make('doctor_id')
+                            ->options(Doctor::with('user')->get()->pluck('user.name', 'id'))
+                            ->label('Doctor')
+                            ->rules('exists:doctors,id')
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, $component) {
+                                // Emit the doctor selection event
+                                $component->getLivewire()->dispatch('doctorSelected', [
+                                    'context' => 'appointment_form',
+                                    'doctor_id' => $state,
+                                ]);
+                            }),
+
+                        Forms\Components\DatePicker::make('date')
+                            ->minDate(now()->toDateString())
+                            ->required(),
+
+                        Forms\Components\TimePicker::make('start_time')
+                            ->required(),
+
+                        Forms\Components\TimePicker::make('end_time')
+                            ->after('start_time')
+                            ->required(),
+                    ]),
+                ])->from('lg')
+               ,
+
+                Split::make([
+                    Section::make([
+                        Forms\Components\Placeholder::make('doctor_info')
+                            ->label('Doctor Information')
+                            ->content(function ($state, $component) {
+                                $doctorInfo = $component->getLivewire()->doctorInfo;
+
+                                if (empty($doctorInfo)) {
+                                    return 'Select a doctor to view information';
+                                }
+
+
+                                $output = '';
+                                foreach ($doctorInfo as $info) {
+                                    if (isset($info['message'])) {
+                                        $output =  $info['message'];
+                                    } else {
+                                        // Format the date and times to a more readable format
+                                        $formattedDate = \Carbon\Carbon::parse($info['date'])->format('d M Y');
+                                        $formattedStartTime = \Carbon\Carbon::parse($info['start_time'])->format('H:i');
+                                        $formattedEndTime = \Carbon\Carbon::parse($info['end_time'])->format('H:i');
+
+                                        $output .= 'Status: ' . ucfirst($info['status']);
+                                        $output .= 'Date: ' . $formattedDate;
+                                        $output .= 'Start Time: ' . $formattedStartTime;
+                                        $output .= 'End Time: ' . $formattedEndTime;
+                                    }
+                                }
+
+                                return $output;
+                            }),
+
+                    ])->grow(false),
+                ]),
             ]);
     }
 
-  
+
+
 
     public static function getRelations(): array
     {
