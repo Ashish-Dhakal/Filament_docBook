@@ -41,6 +41,8 @@ class ReviewResource extends Resource
                 Tables\Columns\TextColumn::make('appointment_id')
                     ->numeric()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('comment')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('pdf')
                     ->searchable()
                     ->url(fn(Review $record) => Storage::url($record->pdf))

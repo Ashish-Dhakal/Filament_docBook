@@ -26,7 +26,7 @@ class ReviewService
         $review->save();
 
       // update the status of the appointment after review added
-        $appointment->status = 'reviewed';
+        $appointment->status = 'completed';
         $appointment->save();
         // if($review){
         //     return ;
