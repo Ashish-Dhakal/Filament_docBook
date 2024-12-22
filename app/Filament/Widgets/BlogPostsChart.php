@@ -1,59 +1,98 @@
 <?php
-
 namespace App\Filament\Widgets;
 
+use Carbon\Carbon;
+use App\Models\Appointment;
 use Filament\Widgets\ChartWidget;
+use Illuminate\Support\Facades\Auth;
 
 class BlogPostsChart extends ChartWidget
 {
-    protected static ?string $heading = 'Blog Posts';
     protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 'full';
 
-    // Add custom styles to ensure full-width rendering
-    // protected function getStyles(): array
-    // {
-    //     return [
-    //         'chart' => [
-    //             'width' => '100%',  // Set the width to 100% of the parent container
-    //             'max-width' => '100%',  // Ensure it does not exceed the full width
-    //         ],
-    //     ];
-    // }
-
-    protected function getData(): array
+    /**
+     * Determine if the widget should be visible.
+     *
+     * @return bool
+     */
+    public static function canView(): bool
     {
+        return Auth::check() && Auth::user()->roles === 'admin';
+    }
+
+    /**
+     * Get the appointment data for this year and last year.
+     *
+     * @return array
+     */
+    public function getAppointmentsData(): array
+    {
+        // Get the current year and last year
+        $currentYear = Carbon::now()->year;
+        $lastYear = $currentYear - 1;
+
+        // Fetch the number of appointments for each month in the current year
+        $appointmentsThisYear = Appointment::whereYear('date', $currentYear)
+            ->get()
+            ->groupBy(function ($date) {
+                return Carbon::parse($date->date)->format('m'); // Group by month
+            });
+
+        // Fetch the number of appointments for each month in the previous year
+        $appointmentsLastYear = Appointment::whereYear('date', $lastYear)
+            ->get()
+            ->groupBy(function ($date) {
+                return Carbon::parse($date->date)->format('m'); // Group by month
+            });
+
+        // Prepare data for each dataset
+        $thisYearData = array_fill(0, 12, 0); 
+        $lastYearData = array_fill(0, 12, 0); 
+
+        // Count appointments for each month in the current year
+        foreach ($appointmentsThisYear as $month => $appointments) {
+            $thisYearData[(int)$month - 1] = $appointments->count();
+        }
+
+        // Count appointments for each month in the previous year
+        foreach ($appointmentsLastYear as $month => $appointments) {
+            $lastYearData[(int)$month - 1] = $appointments->count();
+        }
+
         return [
-            'datasets' => array_merge($this->bar()['datasets'], $this->bar2()['datasets']),
-            'labels' => $this->bar()['labels'],
+            'thisYear' => $thisYearData,
+            'lastYear' => $lastYearData,
         ];
     }
 
-    public function bar(): array
+    /**
+     * Prepare data for the chart widget.
+     *
+     * @return array
+     */
+    protected function getData(): array
     {
+        $appointmentsData = $this->getAppointmentsData();
+
+        // Get the current year and last year
+        $currentYear = Carbon::now()->year;
+        $lastYear = $currentYear - 1;
+
         return [
             'datasets' => [
                 [
-                    'label' => 'Blog posts created 1',
-                    'data' => [40, 100, 5, 26, 21, 32, 45, 74, 65, 45, 77, 89],
+                    'label' => 'Appointments This Year ' . $currentYear,
+                    'data' => $appointmentsData['thisYear'],
                     'backgroundColor' => '#36A2EB',
                     'borderColor' => '#9BD0F5',
                     'borderWidth' => 2,
                 ],
-            ],
-            'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        ];
-    }
-
-    public function bar2(): array
-    {
-        return [
-            'datasets' => [
                 [
-                    'label' => 'Blog posts created 2',
-                    'data' => [0, 10, 5, 2, 21, 32, 45, 74, 65, 45, 77, 89],
-                    'backgroundColor' => '#36A2EB',
-                    'borderColor' => '#9BD0F5',
+                    'label' => 'Appointments Last Year ' . $lastYear,
+                    'data' => $appointmentsData['lastYear'],
+                    'backgroundColor' => '#FF6384',
+                    'borderColor' => '#FFB1C1',
                     'borderWidth' => 2,
                 ],
             ],
@@ -63,24 +102,8 @@ class BlogPostsChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'line'; // Use 'line' or 'bar' based on your requirements
+        return 'line'; // Use 'bar' to display a bar chart
     }
-
-    // protected function getOptions(): array
-    // {
-    //     return [
-    //         'responsive' => true,  // Ensures the chart resizes responsively
-    //         'maintainAspectRatio' => true, // Disables maintaining aspect ratio (if needed)
-    //         'scales' => [
-    //             'x' => [
-    //                 'beginAtZero' => false, // Optional, depending on your needs
-    //             ],
-    //             'y' => [
-    //                 'beginAtZero' => false, // Optional, depending on your needs
-    //             ],
-    //         ],
-    //     ];
-    // }
 
     protected function getStyles(): array
     {
@@ -88,7 +111,7 @@ class BlogPostsChart extends ChartWidget
             'chart' => [
                 'width' => '100%',  // Set the width to 100% of the parent container
                 'max-width' => '100%',  // Ensure it does not exceed the full width
-                'height' => '400px',  // Set your desired height (increase this as needed)
+                'height' => '400px',  // Set your desired height
             ],
         ];
     }

@@ -59,6 +59,8 @@ class AppointmentResource extends Resource
                                     'context' => 'appointment_form',
                                     'doctor_id' => $state,
                                 ]);
+
+                                // self::fetchDoctorInfo($state);
                             }),
 
                         Forms\Components\DatePicker::make('date')
@@ -112,6 +114,12 @@ class AppointmentResource extends Resource
             ]);
     }
 
+
+    // public static function fetchDoctorInfo($doctorId)
+    // {
+    //   dd($doctorId);
+    // }
+    
 
 
 
