@@ -10,6 +10,11 @@ class PaymentChart extends ChartWidget
 {
     protected static ?int $sort = 2;
 
+    public static function canView(): bool
+    {
+        return Auth::check() && Auth::user()->roles === 'admin';
+    }
+
     /**
      * Get the payment data for completed and pending status in the specified year.
      *

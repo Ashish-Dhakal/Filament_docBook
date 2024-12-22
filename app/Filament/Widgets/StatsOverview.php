@@ -31,8 +31,6 @@ class StatsOverview extends BaseWidget
     // }
 
 
-
-
     private function getUserCountByRole(string $role = null): int
     {
         if ($role) {
@@ -88,10 +86,16 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        // User stats
+      // Only show the user-related stats to the admin
+      if (Auth::check() && Auth::user()->hasRole('admin')) {
         $totalUsers = $this->getUserCountByRole();
         $totalPatients = $this->getUserCountByRole('patient');
         $totalDoctors = $this->getUserCountByRole('doctor');
+
+        $stats[] = Stat::make('Total Users', $totalUsers);
+        $stats[] = Stat::make('Total Patients', $totalPatients);
+        $stats[] = Stat::make('Total Doctors', $totalDoctors);
+    }
 
         // Appointment stats
         $totalAppointments = $this->getAppointmentsCountByStatus();
@@ -104,11 +108,11 @@ class StatsOverview extends BaseWidget
 
         return [
 
-            Stat::make('Total Users', $totalUsers),
+            // Stat::make('Total Users', $totalUsers),
 
-            Stat::make('Total Patients', $totalPatients),
+            // Stat::make('Total Patients', $totalPatients),
 
-            Stat::make('Total Doctors', $totalDoctors),
+            // Stat::make('Total Doctors', $totalDoctors),
 
             Stat::make('Total Appointments', $totalAppointments),
 
