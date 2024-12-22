@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 class BlogPostsChart extends ChartWidget
 {
     protected static ?int $sort = 1;
-    protected int | string | array $columnSpan = 'full';
+    // protected int | string | array $columnSpan = 'full';
 
     /**
      * Determine if the widget should be visible.
@@ -82,14 +82,14 @@ class BlogPostsChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Appointments This Year ' . $currentYear,
+                    'label' => 'Appointments of ' . $currentYear,
                     'data' => $appointmentsData['thisYear'],
                     'backgroundColor' => '#36A2EB',
                     'borderColor' => '#9BD0F5',
                     'borderWidth' => 2,
                 ],
                 [
-                    'label' => 'Appointments Last Year ' . $lastYear,
+                    'label' => 'Appointments of ' . $lastYear,
                     'data' => $appointmentsData['lastYear'],
                     'backgroundColor' => '#FF6384',
                     'borderColor' => '#FFB1C1',
