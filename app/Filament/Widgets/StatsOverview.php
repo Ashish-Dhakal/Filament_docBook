@@ -14,21 +14,7 @@ class StatsOverview extends BaseWidget
 {
     protected static bool $isLazy = true;
 
-
-    // protected ?string $heading = 'Analytics';
-
-    // protected ?string $description = 'An overview of some analytics.';
-
-
-    // protected function getHeading(): ?string
-    // {
-    //     return 'Analytics';
-    // }
-
-    // protected function getDescription(): ?string
-    // {
-    //     return 'An overview of some analytics.';
-    // }
+    protected static ?int $sort = 1;
 
 
     private function getUserCountByRole(string $role = null): int

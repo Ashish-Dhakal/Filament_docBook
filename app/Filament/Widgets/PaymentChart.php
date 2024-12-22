@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentChart extends ChartWidget
 {
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 3;
 
     public static function canView(): bool
     {

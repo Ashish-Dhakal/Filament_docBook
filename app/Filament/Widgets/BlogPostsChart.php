@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class BlogPostsChart extends ChartWidget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 2;
     // protected int | string | array $columnSpan = 'full';
 
     /**
