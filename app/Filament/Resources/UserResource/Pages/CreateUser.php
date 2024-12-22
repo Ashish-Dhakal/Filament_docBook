@@ -45,8 +45,8 @@ class CreateUser extends CreateRecord
            
              Doctor::create([
                  'user_id' => $user->id, // Save user_id in the doctor table
-                 'speciality_id' => $data['speciality_id'],
-                 'hourly_rate' => $data['hourly_rate'],
+                 'speciality_id' => $data['doctor']['speciality_id'], // Access nested data
+                 'hourly_rate' => $data['doctor']['hourly_rate'], 
              ]);
          }
  
