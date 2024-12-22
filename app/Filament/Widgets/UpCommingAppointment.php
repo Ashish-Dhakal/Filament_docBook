@@ -43,7 +43,8 @@ class UpCommingAppointment extends BaseWidget
             ->query($query)
             ->columns([
                 TextColumn::make('patient.user.name')
-                    ->label('Patient Name'),
+                    ->label('Patient Name')
+                    ->searchable(),
                 TextColumn::make('doctor.user.name')
                     ->label('Doctor Name'),
                 TextColumn::make('date'),
