@@ -8,21 +8,26 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentChart extends ChartWidget
 {
-    // protected int | string | array $columnSpan = 'full';
     protected static ?int $sort = 2;
 
     /**
-     * Get the payment data for completed and pending status.
+     * Get the payment data for completed and pending status in the specified year.
      *
      * @return array
      */
-    public function getPaymentsData(): array
+    public function getPaymentsData(int $year = null): array
     {
-        // Fetch all payments with 'completed' and 'pending' status
-        $paymentsCompleted = Payment::where('payment_status', 'completed')->get();
-        $paymentsPending = Payment::where('payment_status', 'pending')->get();
+        // If no year is provided, default to the current year
+        $year = $year ?? Carbon::now()->year;
 
+        // Fetch payments filtered by year
+        $paymentsCompleted = Payment::where('payment_status', 'completed')
+            ->whereYear('created_at', $year)
+            ->get();
 
+        $paymentsPending = Payment::where('payment_status', 'pending')
+            ->whereYear('created_at', $year)
+            ->get();
 
         // Initialize arrays to store the total amount for completed and pending payments
         $completedPayments = 0;
@@ -51,9 +56,9 @@ class PaymentChart extends ChartWidget
      */
     protected function getData(): array
     {
-        $paymentData = $this->getPaymentsData();
+        $year = Carbon::now()->year; // Use the current year for example
+        $paymentData = $this->getPaymentsData($year);
 
-        // dD($paymentData);
         return [
             'datasets' => [
                 [
