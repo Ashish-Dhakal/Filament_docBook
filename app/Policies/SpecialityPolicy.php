@@ -13,7 +13,7 @@ class SpecialityPolicy
      */
     public function viewAny(User $user): bool
     {
-        if($user->roles=== 'admin') {
+        if($user->roles=== 'admin' || $user->roles=== 'patient') {
             return true;
         }
         return false;
@@ -24,7 +24,7 @@ class SpecialityPolicy
      */
     public function view(User $user, Speciality $speciality): bool
     {
-        if($user->roles=== 'admin') {
+        if($user->roles=== 'admin' || $user->roles=== 'patient') {
             return true;
         }
         return false;

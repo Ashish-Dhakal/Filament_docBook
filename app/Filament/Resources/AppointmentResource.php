@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Filament\Resources\AppointmentResource\RelationManagers;
 use App\Filament\Resources\AppointmentResource\RelationManagers\ReviewsRelationManager;
+use App\Models\AppointmentSlot;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Split;
 
@@ -53,15 +54,6 @@ class AppointmentResource extends Resource
                             ->rules('exists:doctors,id')
                             ->required()
                             ->reactive()
-                            ->afterStateUpdated(function ($state, $component) {
-                                // Emit the doctor selection event
-                                $component->getLivewire()->dispatch('doctorSelected', [
-                                    'context' => 'appointment_form',
-                                    'doctor_id' => $state,
-                                ]);
-
-                                // self::fetchDoctorInfo($state);
-                            })
                             ->default(fn ($record) => $record ? $record->doctor_id : null),  
                             
 
@@ -80,39 +72,40 @@ class AppointmentResource extends Resource
                ,
 
                 Split::make([
-                    Section::make([
-                        Forms\Components\Placeholder::make('doctor_info')
-                            ->label('Doctor Information')
-                            ->content(function ($state, $component) {
-                                $doctorInfo = $component->getLivewire()->doctorInfo;
-
-                                if (empty($doctorInfo)) {
-                                    return 'Select a doctor to view information';
-                                }
 
 
-                                $output = '';
-                                foreach ($doctorInfo as $info) {
-                                    if (isset($info['message'])) {
-                                        $output =  $info['message'];
-                                    } else {
-                                        // Format the date and times to a more readable format
-                                        $formattedDate = \Carbon\Carbon::parse($info['date'])->format('d M Y');
-                                        $formattedStartTime = \Carbon\Carbon::parse($info['start_time'])->format('H:i');
-                                        $formattedEndTime = \Carbon\Carbon::parse($info['end_time'])->format('H:i');
+                    Forms\Components\Placeholder::make('schedules')
+                    ->label('Schedules')
+                    ->content(function ($get) {
+                        $doctorId = $get('doctor_id');
+                        if (!$doctorId) {
+                            return 'No doctor selected.';
+                        }
 
-                                        $output .= 'Status: ' . ucfirst($info['status']);
-                                        $output .= 'Date: ' . $formattedDate;
-                                        $output .= 'Start Time: ' . $formattedStartTime;
-                                        $output .= 'End Time: ' . $formattedEndTime;
-                                    }
-                                }
+                        $schedules = AppointmentSlot::where('doctor_id', $doctorId)->get();
 
-                                return $output;
-                            })
+                        if ($schedules->isEmpty()) {
+                            return 'No schedules available for this doctor.';
+                        }
 
-                    ])->grow(false),
-                ])->hiddenOn('edit'),
+                        $schedulesData = $schedules->map(function ($schedule) {
+                            return [
+                                'date' => $schedule->date,
+                                'start_time' => $schedule->start_time,
+                                'end_time' => $schedule->end_time,
+                                'status' => $schedule->status,
+                            ];
+                        })->values()->toArray();
+
+                        return view('filament.forms.components.list', [
+                            'columns' => ['day', 'time', 'status'],
+                            'rows' => $schedulesData,
+                        ]);
+                    })
+                    ->columnSpanFull(),
+                
+                    
+                ]),
             ]);
     }
 
@@ -137,7 +130,7 @@ class AppointmentResource extends Resource
         return [
             'index' => Pages\ListAppointments::route('/'),
             'create' => Pages\CreateAppointment::route('/create'),
-            // 'view' => Pages\ViewAppointment::route('/{record}'),
+            'view' => Pages\ViewAppointment::route('/{record}'),
             'edit' => Pages\EditAppointment::route('/{record}/edit'),
         ];
     }

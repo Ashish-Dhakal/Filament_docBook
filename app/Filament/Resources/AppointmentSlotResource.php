@@ -37,7 +37,8 @@ class AppointmentSlotResource extends Resource
                         return null; // Return null if no doctor is found
                     }),
                 Forms\Components\DatePicker::make('date')
-                    ->required(),
+                    ->required()
+                    ->minDate(now()->toDateString()),
                     // ->rules('after:today'),
                 Forms\Components\TimePicker::make('start_time')
                     ->required()

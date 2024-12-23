@@ -172,7 +172,7 @@ class ListAppointments extends ListRecords
                     ->searchable()
                     ->badge()
                     ->color(function ($state) {
-               
+
                         return match ($state) {
                             'pending' => 'danger',
                             'completed' => 'success',
@@ -208,7 +208,7 @@ class ListAppointments extends ListRecords
             ])
             ->actions([
                 ActionGroup::make([
-            
+
                     TableAction::make('updateStatus')
                         ->label('Update Status')
                         ->form([
@@ -233,10 +233,25 @@ class ListAppointments extends ListRecords
                     TableAction::make('giveReview')
                         ->label('Give Review')
                         ->form([
+                            // TextInput::make('appointment_id')
+                            //     ->label('Appointment')
+                            //     ->required()
+                            //     ->default(fn(Appointment $record) => $record->id),
+
+                            // TextInput::make('appointment_id')
+                            //     ->label('Appointment')
+                            //     ->required()
+                            //     ->default(fn(Appointment $record) => $record->id)
+                            //     ->readonly()  // Makes the input field readonly
+                            //     ->helperText(fn(Appointment $record) => 'Patient: ' . $record->patient->user->name . ', Doctor: ' . $record->doctor->user->name),  // Hint to display patient and doctor names
+
                             TextInput::make('appointment_id')
                                 ->label('Appointment')
                                 ->required()
-                                ->default(fn(Appointment $record) => $record->id),
+                                ->default(fn(Appointment $record) => $record->id)
+                                ->hidden()  // Hides the input field from the user
+                                ->helperText(fn(Appointment $record) => 'Patient: ' . $record->patient->user->name . ', Doctor: ' . $record->doctor->user->name), // Display the names in the hint
+
 
                             TextInput::make('review')
                                 ->label('Review')
@@ -251,9 +266,8 @@ class ListAppointments extends ListRecords
                             $this->addReview($data, $record);
                         })
                         ->icon('heroicon-o-arrow-path')
-                        ->visible(fn(Appointment $record) => $record->status === 'booked')
-                        // Visible for doctor only
-                        ->visible(fn() => Auth::user()->hasRole('doctor')),
+                        // Visible only if appointment status is 'completed' and user is a doctor
+                        ->visible(fn(Appointment $record) => $record->status === 'booked' && Auth::user()->hasRole('doctor')),
 
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make()
@@ -281,7 +295,7 @@ class ListAppointments extends ListRecords
 
             ]);
     }
-       /**
+    /**
      * Info list for the appointment details. 
      */
 
@@ -298,16 +312,15 @@ class ListAppointments extends ListRecords
                 Section::make('Appointment Details')
                     ->schema([
                         TextEntry::make('status')->label('Appointment Status')
-                        //based on appointmetn status change the color of the badge
-                        ->color(function ($state) {
-                            return match ($state) {
-                                'pending' => 'danger',
-                                'completed' => 'success',
-                                'booked' => 'primary',
-                                default => 'secondary', // Optional default case
-                            };
-                        })
-                        ,
+                            //based on appointmetn status change the color of the badge
+                            ->color(function ($state) {
+                                return match ($state) {
+                                    'pending' => 'danger',
+                                    'completed' => 'success',
+                                    'booked' => 'primary',
+                                    default => 'secondary', // Optional default case
+                                };
+                            }),
                         TextEntry::make('date')->label('Date'),
                         TextEntry::make('start_time')->label('Start Time'),
                         TextEntry::make('end_time')->label('End Time'),

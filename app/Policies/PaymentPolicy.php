@@ -4,11 +4,12 @@ namespace App\Policies;
 
 use App\Models\User;
 use App\Models\Doctor;
-use App\Models\Review;
 use App\Models\Patient;
+use App\Models\Payment;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\Auth;
 
-class ReviewPolicy
+class PaymentPolicy
 {
 
     public function userId()
@@ -23,26 +24,29 @@ class ReviewPolicy
             return $patientId->id;
         }
     }
+    
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user ): bool
     {
-        return true;
+        if (( $user->roles === 'patient') || ($user->roles === 'admin')) {
+            return true;
+        } 
+        return false;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Review $review): bool
+    public function view(User $user, Payment $payment): bool
     {
         if ($user->roles === 'admin') {
             return true;
-        } elseif ($user->roles === 'doctor' && $review->appointment->doctor_id === $this->userId()) {
-            return true;
-        } elseif ($user->roles === 'patient' && $review->appointment->patient_id === $this->userId()) {
+        } elseif ($user->roles === 'patient' && $payment->patient_id === $this->userId()) {
             return true;
         }
+        return false;
     }
 
     /**
@@ -50,14 +54,13 @@ class ReviewPolicy
      */
     public function create(User $user): bool
     {
-        return $user->roles === 'doctor';
-        // return true;
+        return false;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Review $review): bool
+    public function update(User $user, Payment $payment): bool
     {
         return false;
     }
@@ -65,7 +68,7 @@ class ReviewPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Review $review): bool
+    public function delete(User $user, Payment $payment): bool
     {
         return false;
     }
@@ -73,7 +76,7 @@ class ReviewPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Review $review): bool
+    public function restore(User $user, Payment $payment): bool
     {
         return false;
     }
@@ -81,7 +84,7 @@ class ReviewPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Review $review): bool
+    public function forceDelete(User $user, Payment $payment): bool
     {
         return false;
     }
