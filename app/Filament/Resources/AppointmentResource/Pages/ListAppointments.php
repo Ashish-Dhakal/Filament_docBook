@@ -14,6 +14,7 @@ use App\Models\Appointment;
 use App\Models\PatientHistory;
 use App\Service\ReviewService;
 use App\Models\AppointmentSlot;
+use Filament\Infolists\Infolist;
 use Illuminate\Support\Facades\DB;
 use App\Service\AppointmentService;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,8 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\NotificationType;
 use Filament\Tables\Columns\TextInputColumn;
 use Symfony\Component\HttpFoundation\Response;
@@ -275,6 +278,41 @@ class ListAppointments extends ListRecords
                     ->icon('heroicon-o-check-circle') // Optional: Set an icon for the action
                     ->color('info')
                     ->visible(fn() => Auth::user()->roles === 'admin'),
+
+            ]);
+    }
+       /**
+     * Info list for the appointment details. 
+     */
+
+    public function infolist(Infolist $infolist): Infolist
+
+    {
+        return $infolist
+            ->schema([
+                Section::make('State Details')
+                    ->schema([
+                        TextEntry::make('patient.user.name')->label('Patient Name'),
+                        TextEntry::make('doctor.user.name')->label('Doctor Name'),
+                    ])->columns(2),
+                Section::make('Appointment Details')
+                    ->schema([
+                        TextEntry::make('status')->label('Appointment Status')
+                        //based on appointmetn status change the color of the badge
+                        ->color(function ($state) {
+                            return match ($state) {
+                                'pending' => 'danger',
+                                'completed' => 'success',
+                                'booked' => 'primary',
+                                default => 'secondary', // Optional default case
+                            };
+                        })
+                        ,
+                        TextEntry::make('date')->label('Date'),
+                        TextEntry::make('start_time')->label('Start Time'),
+                        TextEntry::make('end_time')->label('End Time'),
+                    ])->columns(4),
+
 
             ]);
     }

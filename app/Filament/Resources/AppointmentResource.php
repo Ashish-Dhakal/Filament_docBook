@@ -61,7 +61,8 @@ class AppointmentResource extends Resource
                                 ]);
 
                                 // self::fetchDoctorInfo($state);
-                            }),
+                            })
+                            ->default(fn ($record) => $record ? $record->doctor_id : null),
 
                         Forms\Components\DatePicker::make('date')
                             ->minDate(now()->toDateString())
@@ -107,7 +108,7 @@ class AppointmentResource extends Resource
                                 }
 
                                 return $output;
-                            }),
+                            })
 
                     ])->grow(false),
                 ]),
@@ -135,7 +136,7 @@ class AppointmentResource extends Resource
         return [
             'index' => Pages\ListAppointments::route('/'),
             'create' => Pages\CreateAppointment::route('/create'),
-            'view' => Pages\ViewAppointment::route('/{record}'),
+            // 'view' => Pages\ViewAppointment::route('/{record}'),
             'edit' => Pages\EditAppointment::route('/{record}/edit'),
         ];
     }
