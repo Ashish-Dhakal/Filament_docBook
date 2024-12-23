@@ -50,7 +50,8 @@ class ReviewPolicy
      */
     public function create(User $user): bool
     {
-        return $user->roles === 'doctor';
+        return false;
+        // return $user->roles === 'doctor';
         // return true;
     }
 

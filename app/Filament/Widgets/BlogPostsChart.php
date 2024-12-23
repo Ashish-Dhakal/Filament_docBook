@@ -11,6 +11,14 @@ class BlogPostsChart extends ChartWidget
     protected static ?int $sort = 2;
     // protected int | string | array $columnSpan = 'full';
 
+    protected static ?string $minHeight = '300px';
+
+    protected static ?string $heading = 'Appointments Chart';
+
+    protected static ?string $description = 'Comparision of appointments between this year and last year.';
+
+    
+
     /**
      * Determine if the widget should be visible.
      *

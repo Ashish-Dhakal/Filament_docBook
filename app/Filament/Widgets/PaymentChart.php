@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Filament\Widgets;
 
 use Carbon\Carbon;
@@ -10,6 +11,11 @@ class PaymentChart extends ChartWidget
 {
     protected static ?int $sort = 3;
 
+    protected static ?string $maxHeight = '241px';
+
+    protected static ?string $heading = 'Payment Chart';
+
+    protected static ?string $description = 'Comparison of completed and pending payments in the specified year.';
     public static function canView(): bool
     {
         return Auth::check() && Auth::user()->roles === 'admin';
@@ -67,47 +73,26 @@ class PaymentChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Completed Payments',
-                    'data' => [$paymentData['completedPayments']],
-                    'backgroundColor' => '#36A2EB',
-                    'borderColor' => '#9BD0F5',
-                    'borderWidth' => 2,
-                ],
-                [
-                    'label' => 'Pending Payments',
-                    'data' => [$paymentData['pendingPayments']],
-                    'backgroundColor' => '#FF6384',
-                    'borderColor' => '#FFB1C1',
+                    'data' => [
+                        $paymentData['completedPayments'],
+                        $paymentData['pendingPayments']
+                    ],
+                    'backgroundColor' => ['#36A2EB', '#FF6384'],  // Different colors for each slice
+                    'borderColor' => ['#9BD0F5', '#FFB1C1'],  // Border colors for the slices
                     'borderWidth' => 2,
                 ],
             ],
-            'labels' => ['Payments'], // Single label for the entire dataset
+            'labels' => ['Completed Payments', 'Pending Payments'], // Labels for each slice
         ];
     }
 
     /**
-     * Define the type of the chart (bar chart in this case).
+     * Define the type of the chart (pie chart in this case).
      *
      * @return string
      */
     protected function getType(): string
     {
-        return 'bar'; // Use 'bar' for a bar chart
-    }
-
-    /**
-     * Additional styling for the chart.
-     *
-     * @return array
-     */
-    protected function getStyles(): array
-    {
-        return [
-            'chart' => [
-                'width' => '100%',
-                'max-width' => '100%',
-                'height' => '400px',
-            ],
-        ];
+        return 'pie'; // Use 'pie' for a pie chart
     }
 }

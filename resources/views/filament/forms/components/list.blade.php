@@ -15,7 +15,7 @@
                 <td class="px-4 py-2">{{ \Carbon\Carbon::parse($row['start_time'])->format('h:i A') }} - {{ \Carbon\Carbon::parse($row['end_time'])->format('h:i A') }}</td> <!-- Format start and end time -->
                 <td class="px-4 py-2">
                     <!-- Display status in a more readable form (e.g., Active/Inactive, or colors) -->
-                    <span class="inline-block px-2 py-1 text-white 
+                    <span class="inline-block px-2 py-1 text-black 
                     @if($row['status'] === 'active') bg-green-500 @elseif($row['status'] === 'inactive') bg-red-500 @else bg-gray-500 @endif">
                         {{ ucfirst($row['status']) }}
                     </span>

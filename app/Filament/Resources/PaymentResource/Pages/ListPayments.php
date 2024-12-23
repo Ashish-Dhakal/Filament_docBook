@@ -86,7 +86,7 @@ class ListPayments extends ListRecords
                         if (!$record || !isset($record->payment_status)) {
                             return '-'; // Default fallback
                         }
-                        return $record->payment_status === 'pending' ? 'Pay Vai Stripe' : 'Paid';
+                        return $record->payment_status === 'pending' ? 'Pay Via Stripe' : 'Paid';
                     })
                     ->url(function ($record) {
                         if ($record && $record->payment_status === 'pending') {

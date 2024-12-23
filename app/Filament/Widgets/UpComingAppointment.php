@@ -9,12 +9,15 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Filament\Tables\Columns\TextColumn; // Add this import
 use Carbon\Carbon;
 
-class UpCommingAppointment extends BaseWidget
+class UpComingAppointment extends BaseWidget
 {
     protected int | string | array $columnSpan = 'full';
 
     protected static ?int $sort = 4;
 
+    protected static ?string $icon = 'heroicon-o-calendar';
+
+    protected static ?string $heading = 'Upcoming Appointments';
     public function table(Table $table): Table
     {
         $today = Carbon::today();

@@ -73,7 +73,7 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
       // Only show the user-related stats to the admin
-      if (Auth::check() && Auth::user()->hasRole('admin')) {
+    //   if (Auth::check() && Auth::user()->hasRole('admin')) {
         $totalUsers = $this->getUserCountByRole();
         $totalPatients = $this->getUserCountByRole('patient');
         $totalDoctors = $this->getUserCountByRole('doctor');
@@ -81,7 +81,7 @@ class StatsOverview extends BaseWidget
         $stats[] = Stat::make('Total Users', $totalUsers);
         $stats[] = Stat::make('Total Patients', $totalPatients);
         $stats[] = Stat::make('Total Doctors', $totalDoctors);
-    }
+    // }
 
         // Appointment stats
         $totalAppointments = $this->getAppointmentsCountByStatus();
@@ -96,20 +96,24 @@ class StatsOverview extends BaseWidget
 
             // Stat::make('Total Users', $totalUsers),
 
-            // Stat::make('Total Patients', $totalPatients),
+            Stat::make('Total Patients', $totalPatients),
 
-            // Stat::make('Total Doctors', $totalDoctors),
+            Stat::make('Total Doctors', $totalDoctors),
 
-            Stat::make('Total Appointments', $totalAppointments),
+            Stat::make('Total Appointments', $totalAppointments)
+            ->url(route('filament.admin.resources.appointments.index'). '?activeTab=All'),
 
             Stat::make('Completed Appointments', $totalCompletedAppointments)
-                ->color('success'),
+                ->color('success')
+                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Completed'),
 
             Stat::make('Pending Appointments', $totalPendingAppointments)
-                ->color('warning'),
+                ->color('warning')
+                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Pending'),
 
             Stat::make('Booked Appointments', $totalBookedAppointments)
-                ->color('info'),
+                ->color('info')
+                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Booked'),
         ];
     }
 }

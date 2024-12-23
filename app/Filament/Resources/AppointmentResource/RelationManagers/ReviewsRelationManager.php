@@ -3,12 +3,15 @@
 namespace App\Filament\Resources\AppointmentResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use App\Models\Review;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class ReviewsRelationManager extends RelationManager
 {
@@ -59,7 +62,8 @@ class ReviewsRelationManager extends RelationManager
                     ->label('Doctor Name'),
                 Tables\Columns\TextColumn::make('comment'),
                 Tables\Columns\ImageColumn::make('pdf') // Use 'pdf' (attribute name)
-                ->label('PDF Image') // Optional: Set column label
+                ->label('PDF') // Optional: Set column label
+                ->url(fn(Review $record) => Storage::url($record->pdf))
                 ->disk('public') // Optional: Set image storage disk
                 ->size(100), // Optional: Adjust image size
             ])
