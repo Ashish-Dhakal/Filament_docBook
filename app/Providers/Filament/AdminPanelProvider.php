@@ -36,8 +36,18 @@ class AdminPanelProvider extends PanelProvider
             ->registration(Register::class)
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Indigo,
+                'secondary' => Color::Sky,
+                'success' => Color::Emerald,
+                'danger' => Color::Rose,
+                'warning' => Color::Orange,
+                'info' => Color::Amber,
             ])
+            // ->brandLogo(asset('image/favicon.png'))
+            // ->favicon(asset('image/favicon.png'))
+            // ->brandLogoHeight('4rem')
+            ->font('poppins')
+            ->brandName('DocBook')
 
 
             ->userMenuItems([
