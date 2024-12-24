@@ -18,7 +18,7 @@ class AppointmentService
     /**
      * Create an appointment
      */
-    public function createAppointment(array $data)
+    public function createAppointment(array $data , $datafrom=null , $appointmentId = null)
     {
         $data['patient_id'] = $this->getAuthenticatedPatientId($data);
         // Extract relevant variables
@@ -41,7 +41,7 @@ class AppointmentService
         }
 
         // Step 3: Create Appointment and Appointment Slot
-        return $this->storeAppointment($data, $patientId);
+        return $this->storeAppointment($data, $patientId , $datafrom , $appointmentId);
     }
 
     /**
@@ -98,43 +98,65 @@ class AppointmentService
     /**
      * Store a newly created appointment in storage.
      */
-    private function storeAppointment($data)
+    private function storeAppointment($data, $patientId, $datafrom ,$appointment)
     {
-        // dd($patientId);
-        // Add the patient ID to data
-        // $data['patient_id'] = $patientId;
-        // if()
-
-        if(Auth::user()->roles == 'patient'){
+        // dd($data , $appointment);
+        if (Auth::user()->roles == 'patient') {
             $userId = Auth::id();
             $patient = Patient::where('user_id', $userId)->first();
             $patientId = $patient->id;
             $status = 'pending';
-        }
-        else{
+        } else {
             $status = 'booked';
             $patientId = $data['patient_id'];
         }
-        // Save the appointment
-        $appointment = new Appointment();
-        $appointment->fill($data);
-        $appointment->patient_id = $patientId;
-        $appointment->status = $status;
-        $appointment->save();
-
-        // Save the corresponding slot as booked
-        $appointmentSlot = new AppointmentSlot();
-        $appointmentSlot->fill([
-            'doctor_id' => $data['doctor_id'],
-            'date' => $data['date'],
-            'start_time' => $data['start_time'],
-            'end_time' => $data['end_time'],
-            'status' => 'booked',
-        ]);
-        $appointmentSlot->save();
-
-        return $appointment;
+    
+        if ($datafrom !== 'edit') {
+            // Create a new appointment
+            $appointment = new Appointment();
+            $appointment->fill($data);
+            $appointment->patient_id = $patientId;
+            $appointment->status = $status;
+            $appointment->save();
+    
+            // Save the corresponding slot as booked
+            $appointmentSlot = new AppointmentSlot();
+            $appointmentSlot->fill([
+                'doctor_id' => $data['doctor_id'],
+                'date' => $data['date'],
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'status' => 'booked',
+            ]);
+            $appointmentSlot->save();
+    
+            return $appointment;
+        } else {
+            // Update an existing appointment
+            $appointment = Appointment::findOrFail($appointment); // Assuming $data contains 'id' for the existing appointment
+            $appointment->fill($data);
+            $appointment->patient_id = $patientId;
+            $appointment->status = $status;
+            $appointment->save();
+    
+            // Update the corresponding slot
+            $appointmentSlot = AppointmentSlot::where('doctor_id', $data['doctor_id'])
+                ->where('date', $data['date'])
+                ->where('start_time', $data['start_time'])
+                ->first();
+    
+            if ($appointmentSlot) {
+                $appointmentSlot->fill([
+                    'status' => 'pending',
+                ]);
+                $appointmentSlot->save();
+            }
+    
+            return $appointment;
+        }
     }
+    
+
 
     /**
      * Get the authenticated patient ID.

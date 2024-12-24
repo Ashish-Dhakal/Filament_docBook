@@ -17,14 +17,16 @@ class EditAppointment extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         $service = new AppointmentService();
-
+        // dd($record->id);
+        $appointmentId = $record->id;
+        $datafrom = 'edit';
         try {
-            $appointment = $service->createAppointment($data);
+            $appointment = $service->createAppointment($data, $datafrom , $appointmentId);
             // Success notification
             Notification::make()
-                ->title('Appointment Created')
+                ->title('Appointment Edited')
                 ->success()
-                ->body('The appointment has been successfully created.')
+                ->body('The appointment has been successfully edited.')
                 ->send();
 
             return $appointment;
@@ -38,6 +40,11 @@ class EditAppointment extends EditRecord
 
             throw $e; // Propagate the exception
         }
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 
     protected function getHeaderActions(): array
