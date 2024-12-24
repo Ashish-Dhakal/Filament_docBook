@@ -164,7 +164,7 @@ class ListAppointments extends ListRecords
                 Tables\Columns\TextColumn::make('start_time'),
                 Tables\Columns\TextColumn::make('end_time'),
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Appointmetn Status')
+                    ->label('Appointment Status')
                     ->formatStateUsing(function ($state) {
                         // Return the state for display
                         return ucfirst($state);
@@ -189,7 +189,7 @@ class ListAppointments extends ListRecords
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
+            ])->defaultSort('status', 'asc')
             ->modifyQueryUsing(function (Builder $query) {
                 $user = Auth::user();
                 if ($user->hasRole('admin')) {
