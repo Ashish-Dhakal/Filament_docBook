@@ -60,6 +60,7 @@ class PaymentResource extends Resource
             'create' => Pages\CreatePayment::route('/create'),
             'view' => Pages\ViewPayment::route('/{record}'),
             'edit' => Pages\EditPayment::route('/{record}/edit'),
+            'stripePayment' => Pages\StripePayment::route('/stripe-payment/{record}'),
         ];
     }
 }

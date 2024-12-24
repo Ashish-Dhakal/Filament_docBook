@@ -90,7 +90,8 @@ class ListPayments extends ListRecords
                     })
                     ->url(function ($record) {
                         if ($record && $record->payment_status === 'pending') {
-                            return route('stripe.index', ['id' => $record->id]);
+                            $url = url('/admin/payments/stripe-payment', ['id' => $record->id]);
+                            return $url;
                         }
                         return null; 
                     })
