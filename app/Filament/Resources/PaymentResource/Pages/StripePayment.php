@@ -1,8 +1,8 @@
 <?php
 namespace App\Filament\Resources\PaymentResource\Pages;
 
-use Stripe\Charge;
 use Stripe\Stripe;
+use Stripe\Charge;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Filament\Resources\Pages\Page;
@@ -25,13 +25,17 @@ class StripePayment extends Page
     // Override getRecord() to ensure it always returns an Eloquent model
     public function getRecord(): Payment
     {
-        // Use the route parameter to retrieve the payment model
+        if (!isset($this->record)) {
+            throw new \Exception('Record not initialized');
+        }
+
+        // Use the record ID passed in the route to retrieve the payment model
         return Payment::findOrFail($this->record);
     }
 
     public function mount($record): void
     {
-        // Retrieve the payment model instance using getRecord()
+        // Ensure the record is available and set the payment model
         $payment = $this->getRecord();
 
         if (!$payment) {
@@ -62,60 +66,26 @@ class StripePayment extends Page
         $this->payment = $payment;
     }
 
-    public function createCharge(Request $request)
+    public function createCharge(Request $request ,$payment_id)
     {
-        // Retrieve the payment model instance using getRecord()
-        $payment = $this->getRecord();
+        $payment = Payment::find($payment_id);
+        // dd($request);
 
-        // If payment doesn't exist, show a failure notification
-        if (!$payment) {
-            Notification::make()
-                ->title('Payment Error')
-                ->body('Payment record not found!')
-                ->danger()
-                ->send();
-
-            // Perform the redirection without returning it from createCharge
-            return $this->redirectRoute('filament.admin.resources.payments.index');
-        }
-
-        // Set Stripe API key
         Stripe::setApiKey(env('STRIPE_SECRET'));
+        Charge::create([
+            "amount" => $payment->amount,
+            "currency" => "usd",
+            "source" => $request->stripeToken,
+            "description" => "Binaryboxtuts Payment Test"
+        ]);
 
-        try {
-            // Create Stripe charge
-            Charge::create([
-                "amount" => $payment->amount * 100, // Amount in cents
-                "currency" => "usd",
-                "source" => $request->stripeToken,
-                "description" => "Payment for Order #" . $payment->id,
-            ]);
+        $payment->update([
+            'payment_status' => 'completed',
+            'transaction_id' => $request->stripeToken,
+            'payment_type' => 'online'
+        ]);
 
-            // Update the payment status to completed
-            $payment->update([
-                'payment_status' => 'completed',
-                'payment_type' => 'online'
-            ]);
-
-            // Notify user of successful payment
-            Notification::make()
-                ->title('Payment Successful')
-                ->body('Your payment has been successfully completed.')
-                ->success()
-                ->send();
-
-            // Perform the redirection without returning it from createCharge
-            return $this->redirectRoute('filament.admin.resources.payments.index');
-        } catch (\Exception $e) {
-            // Handle errors and notify user
-            Notification::make()
-                ->title('Payment Failed')
-                ->body($e->getMessage())
-                ->danger()
-                ->send();
-
-            // Perform the redirection without returning it from createCharge
-            return $this->redirectRoute('filament.admin.resources.payments.index');
-        }
+        // Return with success notification
+        return redirect()->route('filament.admin.resources.payments.index')->with('success', 'Payment successfully done!');
     }
 }
