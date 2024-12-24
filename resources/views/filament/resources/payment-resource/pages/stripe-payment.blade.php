@@ -4,7 +4,7 @@
 @endphp
     <div class="container mx-auto">
         <div class="flex justify-center">
-            <div class="w-full max-w-md">
+            <div class="w-full">
                 <div class="bg-white rounded-lg shadow-md dark:bg-white dark:border-gray-600">
                     <div class="p-6">
                         <h2 class="text-2xl font-semibold mb-4">Payment for Order #{{ $payment->id }}</h2>
