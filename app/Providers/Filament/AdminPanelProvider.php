@@ -9,6 +9,7 @@ use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use App\Filament\Pages\Auth\Register;
+use App\Filament\Pages\UpdateProfile;
 use App\Filament\Widgets\StatsOverview;
 use App\Filament\Widgets\BlogPostsChart;
 use Filament\Navigation\NavigationGroup;
@@ -31,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->profile()
+            ->profile(UpdateProfile::class)
             ->registration(Register::class)
             ->login()
             ->colors([
@@ -42,8 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Settings')
-                    ->icon('heroicon-o-cog-6-tooth'),
-                
+                    ->icon('heroicon-o-cog-6-tooth'),  
             ])
 
             ->navigationGroups([

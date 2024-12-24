@@ -17,14 +17,6 @@ class StatsOverview extends BaseWidget
     protected static ?int $sort = 1;
 
 
-    private function getUserCountByRole(string $role = null): int
-    {
-        if ($role) {
-            return User::where('roles', $role)->count();
-        }
-
-        return User::count();
-    }
 
     /**
      * Get the authenticated user's related ID (patient or doctor).
@@ -72,16 +64,6 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-      // Only show the user-related stats to the admin
-    //   if (Auth::check() && Auth::user()->hasRole('admin')) {
-        $totalUsers = $this->getUserCountByRole();
-        $totalPatients = $this->getUserCountByRole('patient');
-        $totalDoctors = $this->getUserCountByRole('doctor');
-
-        $stats[] = Stat::make('Total Users', $totalUsers);
-        $stats[] = Stat::make('Total Patients', $totalPatients);
-        $stats[] = Stat::make('Total Doctors', $totalDoctors);
-    // }
 
         // Appointment stats
         $totalAppointments = $this->getAppointmentsCountByStatus();
@@ -90,15 +72,9 @@ class StatsOverview extends BaseWidget
         $totalBookedAppointments = $this->getAppointmentsCountByStatus('booked');
 
         // Get the role of the authenticated user
-        $userRole = Auth::check() ? Auth::user()->roles : null;
+        // $userRole = Auth::check() ? Auth::user()->roles : null;
 
         return [
-
-            // Stat::make('Total Users', $totalUsers),
-
-            Stat::make('Total Patients', $totalPatients),
-
-            Stat::make('Total Doctors', $totalDoctors),
 
             Stat::make('Total Appointments', $totalAppointments)
             ->url(route('filament.admin.resources.appointments.index'). '?activeTab=All'),

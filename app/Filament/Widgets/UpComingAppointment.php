@@ -27,7 +27,8 @@ class UpComingAppointment extends BaseWidget
     
         // Base query to filter appointments within the next week
         $query = Appointment::query()
-            ->whereBetween('date', [$today, $nextMonth]);
+            ->whereBetween('date', [$today, $nextMonth])
+            ->whereIn('status', ['booked', 'pending']);
     
         // If the user is an admin, show all appointments
         if ($user->hasRole('admin')) {
@@ -52,7 +53,8 @@ class UpComingAppointment extends BaseWidget
                     ->label('Doctor Name'),
                 TextColumn::make('date'),
                 TextColumn::make('start_time'),
-                TextColumn::make('status'),
+                TextColumn::make('status')
+                ->searchable(),
             ]);
     }
 }
