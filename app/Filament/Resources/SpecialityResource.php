@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SpecialityResource\Pages;
 use App\Filament\Resources\SpecialityResource\RelationManagers;
 use App\Filament\Resources\SpecialityResource\RelationManagers\DoctorRelationManager;
+use Filament\Forms\Set;
+use Illuminate\Support\Str;
 
 class SpecialityResource extends Resource
 {
     protected static ?string $model = Speciality::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $navigationGroup = 'Specialization';
 
@@ -29,7 +31,11 @@ class SpecialityResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->live()
+                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
+                    Forms\Components\Hidden::make('slug')
+                    ->required(),
             ]);
     }
 
@@ -80,8 +86,8 @@ class SpecialityResource extends Resource
         return [
             'index' => Pages\ListSpecialities::route('/'),
             'create' => Pages\CreateSpeciality::route('/create'),
-            'view' => Pages\ViewSpeciality::route('/{record}'),
-            'edit' => Pages\EditSpeciality::route('/{record}/edit'),
+            'view' => Pages\ViewSpeciality::route('/{record:slug}'),
+            'edit' => Pages\EditSpeciality::route('/{record:slug}/edit'),
         ];
     }
 }

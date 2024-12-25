@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Speciality extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [ 'name' ,'slug'];
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     public function doctors()
     {
