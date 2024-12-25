@@ -6,6 +6,7 @@ use Filament\Tables;
 use Filament\Actions;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
+use Illuminate\Support\Facades\Auth;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Resources\Pages\ListRecords;
@@ -69,7 +70,8 @@ class ListPayments extends ListRecords
                     ]),
                 Tables\Columns\TextColumn::make('transaction_id')
                     ->searchable()
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->visible(fn($record) => Auth::user()->roles === 'admin'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -90,7 +92,7 @@ class ListPayments extends ListRecords
                     })
                     ->url(function ($record) {
                         if ($record && $record->payment_status === 'pending') {
-                            $url = url('/admin/payments/stripe-payment', ['id' => $record->id]);
+                            $url = url('/admin/payments/stripe-payment', ['slug' => $record->slug]);
                             return $url;
                         }
                         return null; 

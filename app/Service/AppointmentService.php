@@ -264,9 +264,11 @@ class AppointmentService
         if (!$firstReview) {
             return 'Doctor is yet to add a review.';
         }
+        $payment_slug = 'pay-'.uniqid();
         $payment = Payment::create([
             'appointment_id' => $appointment->id,
             'amount' => $totalFee,
+            'slug' => $payment_slug,
             'patient_id' => $appointment->patient_id,
         ]);
 

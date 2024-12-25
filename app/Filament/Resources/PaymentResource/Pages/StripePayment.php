@@ -35,7 +35,7 @@ class StripePayment extends Page
         }
 
         // Use the record ID passed in the route to retrieve the payment model
-        return Payment::findOrFail($this->record);
+        return Payment::where('slug', $this->record)->firstOrFail();
     }
 
     public function mount($record): void
@@ -94,9 +94,9 @@ class StripePayment extends Page
     //     return redirect()->route('filament.admin.resources.payments.index')->with('success', 'Payment successfully done!');
     // }
     
-    public function createCharge(Request $request, $payment_id)
+    public function createCharge(Request $request, $slug)
     {
-        $payment = Payment::find($payment_id);
+        $payment = Payment::find($slug);
     
         // Check if the payment amount is less than $1
         if ($payment->amount < 100) { // Stripe amount is in cents
