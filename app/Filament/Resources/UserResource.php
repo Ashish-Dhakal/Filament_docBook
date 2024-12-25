@@ -23,7 +23,7 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-plus';
 
     protected static string $relationship = 'users';
 
@@ -179,6 +179,27 @@ class UserResource extends Resource
 
     //         ]);
     // }
+
+
+    public static function infolist(Infolist $infolist): Infolist
+
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('name')->label('Name'),
+                TextEntry::make('email')->label('Email'),
+                TextEntry::make('roles')->label('Role'),
+                TextEntry::make('roles')->label('hourly_rate')
+                ->getStateUsing(fn($record)=>$record->doctor->hourly_rate)
+                ->visible(fn($record) => $record->roles === 'doctor'),
+                TextEntry::make('address')->label('address'),
+                TextEntry::make('phone')->label('phone'),
+                TextEntry::make('gender')->label('gender'),
+                TextEntry::make('age')->label('age'),
+                TextEntry::make('blood_group')->label('blood_group'),
+                
+            ])->columns(3);
+    }
 
     public static function getPages(): array
     {

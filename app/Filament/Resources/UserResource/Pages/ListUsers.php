@@ -6,10 +6,12 @@ use App\Models\User;
 use Filament\Actions;
 use App\Models\Doctor;
 use App\Models\Patient;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Components\Tab;
 use App\Filament\Resources\UserResource;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Infolists\Components\TextEntry;
 
 
 

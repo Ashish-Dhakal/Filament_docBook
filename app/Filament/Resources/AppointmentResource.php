@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Filament\Resources\AppointmentResource\RelationManagers;
+use App\Filament\Resources\AppointmentResource\RelationManagers\PaymentRelationManager;
 use App\Filament\Resources\AppointmentResource\RelationManagers\ReviewsRelationManager;
 use App\Models\AppointmentSlot;
 use Filament\Forms\Components\Section;
@@ -30,7 +31,7 @@ class AppointmentResource extends Resource
 {
     protected static ?string $model = Appointment::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-pause-circle';
 
     protected static ?string $navigationGroup = 'Appointments Management';
 
@@ -121,7 +122,8 @@ class AppointmentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ReviewsRelationManager::class
+            ReviewsRelationManager::class,
+            PaymentRelationManager::class,
         ];
     }
 
