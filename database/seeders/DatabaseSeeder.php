@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
 
         $speciality = Speciality::create([
             'name' => 'Cardiology',
+            'slug' => 'cardiology',
         ]);
 
         Doctor::create([
