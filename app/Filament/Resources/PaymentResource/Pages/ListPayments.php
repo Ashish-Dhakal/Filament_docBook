@@ -102,7 +102,7 @@ class ListPayments extends ListRecords
                         return $record->payment_status === 'pending' ? 'primary' : 'success';
                     }),
 
-            ])->defaultSort('quick_pay', 'desc')
+            ])->defaultSort('payment_status', 'asc')
             ->filters([
                 //
             ])
