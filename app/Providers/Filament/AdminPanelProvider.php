@@ -52,8 +52,9 @@ class AdminPanelProvider extends PanelProvider
 
             ->userMenuItems([
                 MenuItem::make()
-                    ->label('Settings')
-                    ->icon('heroicon-o-cog-6-tooth'),  
+                    ->label('Dashboard')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    // ->url(route('filament.admin.pages.dashboard')),
             ])
 
             ->navigationGroups([

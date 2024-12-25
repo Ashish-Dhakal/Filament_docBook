@@ -77,15 +77,21 @@ class StatsOverview extends BaseWidget
         return [
 
             Stat::make('Total Appointments', $totalAppointments)
-            ->url(route('filament.admin.resources.appointments.index'). '?activeTab=All'),
+            ->url(route('filament.admin.resources.appointments.index'). '?activeTab=All')
+            ->description('Your Total Appointments')
+            ->descriptionIcon('heroicon-s-calendar'),
 
             Stat::make('Completed Appointments', $totalCompletedAppointments)
-                ->color('success')
-                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Completed'),
+                // ->color('success')
+                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Completed')
+                ->description('Your Completed Appointments')
+                ->descriptionIcon('heroicon-s-check-badge'),
 
             Stat::make('Pending Appointments', $totalPendingAppointments)
                 ->color('warning')
-                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Pending'),
+                ->url(route('filament.admin.resources.appointments.index'). '?activeTab=Pending')
+                ->description('Your Pending Appointments')
+                ->descriptionIcon('heroicon-s-shield-exclamation'),
 
             Stat::make('Booked Appointments', $totalBookedAppointments)
                 ->color('info')

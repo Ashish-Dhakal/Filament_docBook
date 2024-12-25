@@ -51,7 +51,7 @@ class UserResource extends Resource
                     ])
                     ->required()
                     ->reactive()
-                    ->disabled(fn(callable $get) => $get('id') !== null)  // Disable if the record is being edited
+                    // ->disabled(fn(callable $get) => $get('id') !== null)  // Disable if the record is being edited
                 ,
                 Forms\Components\Select::make('gender')
                     ->options([
@@ -59,6 +59,7 @@ class UserResource extends Resource
                         'female' => 'Female',
                     ])
                     ->label('Gender')
+                    // ->extraInputAttributes(['readonly' => true])
                     ->required(),
 
 
