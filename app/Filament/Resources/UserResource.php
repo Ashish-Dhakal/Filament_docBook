@@ -38,6 +38,7 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
+                    ->unique( ignoreRecord: true)
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
@@ -153,7 +154,7 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
