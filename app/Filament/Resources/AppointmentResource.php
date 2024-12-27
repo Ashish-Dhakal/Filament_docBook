@@ -76,7 +76,14 @@ class AppointmentResource extends Resource
 
 
                     Forms\Components\Placeholder::make('schedules')
-                    ->label('Schedules')
+                    ->label(function ($get) {
+                        $doctorId = $get('doctor_id');
+                        if ($doctorId) {
+                            $doctor = Doctor::find($doctorId);
+                            return $doctor ? "{$doctor->user->name}'s booked time slot" : 'No doctor selected.';
+                        }
+                        return 'No doctor selected.';
+                    })
                     ->content(function ($get) {
                         $doctorId = $get('doctor_id');
                         if (!$doctorId) {
