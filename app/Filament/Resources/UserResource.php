@@ -38,13 +38,23 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
-                    ->unique( ignoreRecord: true)
+                    ->unique(ignoreRecord: true)
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required()
+                    ->required(fn($context) => $context === 'create')
                     ->maxLength(255),
+
+                // Forms\Components\TextInput::make('password')
+                //     ->password()
+                //     ->maxLength(255)
+                //     ->required(fn(?Model $record) => $record === null) // Required only when creating
+                //     ->visible(fn(?Model $record) => $record === null || $record !== null) // Always visible
+                //     ->dehydrated(fn($state) => filled($state)) // Only include in form submission if filled
+                //     ->label('Password'),
+
+
                 Forms\Components\Select::make('roles')
                     ->options([
                         'patient' => 'Patient',
@@ -52,7 +62,7 @@ class UserResource extends Resource
                     ])
                     ->required()
                     ->reactive()
-                    // ->disabled(fn(callable $get) => $get('id') !== null)  // Disable if the record is being edited
+                // ->disabled(fn(callable $get) => $get('id') !== null)  // Disable if the record is being edited
                 ,
                 Forms\Components\Select::make('gender')
                     ->options([
@@ -107,7 +117,6 @@ class UserResource extends Resource
                     ->maxLength(20)
                     ->required(),
             ]);
-       
     }
 
     public static function table(Table $table): Table
@@ -144,6 +153,7 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->paginated(2)
             ->filters([
                 //
             ])
@@ -191,14 +201,14 @@ class UserResource extends Resource
                 TextEntry::make('email')->label('Email'),
                 TextEntry::make('roles')->label('Role'),
                 TextEntry::make('roles')->label('hourly_rate')
-                ->getStateUsing(fn($record)=>$record->doctor->hourly_rate)
-                ->visible(fn($record) => $record->roles === 'doctor'),
+                    ->getStateUsing(fn($record) => $record->doctor->hourly_rate)
+                    ->visible(fn($record) => $record->roles === 'doctor'),
                 TextEntry::make('address')->label('address'),
                 TextEntry::make('phone')->label('phone'),
                 TextEntry::make('gender')->label('gender'),
                 TextEntry::make('age')->label('age'),
                 TextEntry::make('blood_group')->label('blood_group'),
-                
+
             ])->columns(3);
     }
 
