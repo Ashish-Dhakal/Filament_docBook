@@ -43,6 +43,9 @@ class AdminPanelProvider extends PanelProvider
                 'warning' => Color::Orange,
                 'info' => Color::Amber,
             ])
+            ->sidebarWidth('17rem')
+            ->spa()
+            ->sidebarCollapsibleOnDesktop()
             ->brandLogo(asset('image/favicon.png'))
             ->favicon(asset('image/favicon.png'))
             ->brandLogoHeight('4rem')
@@ -101,4 +104,15 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+
+    public function layout(): array
+{
+    return [
+        'sidebar' => [
+            'collapsible' => true,
+            'brandLogo' => asset('image/favicon.png'),
+        ],
+    ];
+}
+
 }

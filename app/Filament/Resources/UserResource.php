@@ -153,7 +153,6 @@ class UserResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->paginated(2)
             ->filters([
                 //
             ])
@@ -161,6 +160,22 @@ class UserResource extends Resource
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
+                    ->disabled(function ($record) {
+                        // If the record is a patient, check if they have appointments
+
+                        if ($record->roles === 'patient' && $record->patient->appointments()->exists()) {
+                            return true;
+                        }
+                        if ($record->roles === 'admin') {
+                            return true;
+                        }
+                        // If the record is a doctor, check if they have appointments
+                        if ($record->roles === 'doctor' && $record->doctor->appointments()->exists()) {
+                            return true;
+                        }
+
+                        return false;
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

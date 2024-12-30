@@ -65,7 +65,17 @@ class SpecialityResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->disabled(function ($record) {
+           
+        
+                    // If the record is a doctor, check if they have appointments
+                    if ($record->doctors()->exists()) {
+                        return true;
+                    }
+        
+                    return false;
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
